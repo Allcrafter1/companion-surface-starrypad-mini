@@ -1,0 +1,31 @@
+{
+  "$schema": "../node_modules/@companion-surface/base/assets/manifest.schema.json",
+  "type": "surface",
+  "id": "starrypad-mini",
+  "name": "STARRYPAD MINI",
+  "shortname": "starrypad-mini",
+  "description": "Experimental RGB surface for Donner STARRYPAD MINI firmware 010",
+  "version": "0.0.0",
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "Allcrafter1",
+      "github": "Allcrafter1"
+    }
+  ],
+  "runtime": {
+    "type": "node22",
+    "apiVersion": "0.0.0",
+    "entrypoint": "../dist/main.js"
+  },
+  "keywords": [
+    "midi",
+    "donner"
+  ],
+  "products": [
+    "STARRYPAD MINI"
+  ],
+  "repository": "https://github.com/Allcrafter1/companion-surface-starrypad-mini",
+  "bugs": "https://github.com/Allcrafter1/companion-surface-starrypad-mini/issues",
+  "usbIds": []
+}

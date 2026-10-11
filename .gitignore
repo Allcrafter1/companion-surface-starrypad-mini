@@ -1,0 +1,10 @@
+node_modules/
+dist/
+pkg/
+*.tgz
+.yarn/
+.tools/
+starrypad-diagnostics-*.txt
+*.bin
+*.dump
+*.syx

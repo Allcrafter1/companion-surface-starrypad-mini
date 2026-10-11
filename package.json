@@ -1,0 +1,37 @@
+{
+  "name": "companion-surface-starrypad-mini",
+  "version": "0.1.0",
+  "description": "Experimental Bitfocus Companion surface for the Donner STARRYPAD MINI",
+  "main": "dist/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "package": "npm run build && companion-surface-build",
+    "repair-control-flags": "npm run build && node tools/repair-control-flags.mjs",
+    "diagnostics": "node tools/collect-diagnostics.mjs",
+    "hardware-smoke": "npm run build && node tools/hardware-smoke.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Allcrafter1/companion-surface-starrypad-mini.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Allcrafter1/companion-surface-starrypad-mini/issues"
+  },
+  "engines": {
+    "node": "^22.21 || ^26.5",
+    "yarn": "^4"
+  },
+  "dependencies": {
+    "@companion-surface/base": "1.3.0",
+    "@julusian/midi": "3.8.1"
+  },
+  "devDependencies": {
+    "@companion-module/tools": "^3.1.1",
+    "@types/node": "^22.20.4",
+    "typescript": "~5.9.3"
+  },
+  "packageManager": "yarn@4.18.1"
+}
