@@ -1,7 +1,7 @@
 # STARRYPAD MINI
 
 This experimental surface module has been tested with a Donner STARRYPAD MINI,
-**firmware 010**, on Linux with Companion 5.0.7.
+**firmware 010**, on CompanionPi (Debian 13) with Companion 5.0.7.
 
 ## Usage
 
@@ -36,6 +36,11 @@ Only real color changes are written. Unchanged colors are deduplicated and rapid
 updates are reduced to the latest value. Unknown internal control values are
 left untouched; input remains active and RGB is disabled until the next
 reconnect.
+
+On Linux, a unique USB serial number gives each controller a stable Companion
+identity even when ALSA client numbers change. The serial is hashed before it
+is used. Devices without a unique serial use their physical USB port instead.
+Two real controllers have not yet been available for a practical test.
 
 Relevant log entries begin with `[SPM-`. When reporting a problem, include the
 device model, firmware, operating system, Companion version, and matching log

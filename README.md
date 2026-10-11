@@ -8,9 +8,9 @@ the corresponding pad as RGB.
 ## Tested configuration
 
 - Donner STARRYPAD MINI, **firmware 010**
-- Linux (Ubuntu) over USB MIDI
+- Linux (CompanionPi on Debian 13) over USB MIDI
 - Bitfocus Companion 5.0.7
-- Module version 0.1.0
+- Module version 0.2.0
 
 Other firmware versions and operating systems have not been tested yet.
 
@@ -22,8 +22,8 @@ has not been confirmed. This version specifically detects a MIDI port named
 
 ## Installation
 
-1. Download `starrypad-mini-0.1.0.tgz` from the
-   [v0.1.0 release](https://github.com/Allcrafter1/companion-surface-starrypad-mini/releases/tag/v0.1.0).
+1. Download `starrypad-mini-0.2.0.tgz` from the
+   [v0.2.0 release](https://github.com/Allcrafter1/companion-surface-starrypad-mini/releases/tag/v0.2.0).
 2. Open the **Modules** page in Companion and select **Import module package**.
 3. Import the downloaded `.tgz` file.
 4. Open **Surfaces**, select **Add Surface Integration**, and enable the
@@ -132,7 +132,11 @@ version, reproduction steps, and preferably the diagnostics report.
 - Five complete 16-pad bursts at 1 ms verified by readback and restored.
 - Ten Companion restarts reached `ready` ten times.
 - Physical unplug and reconnect completed successfully.
-- 24 automated protocol, mapping, deduplication, safety, and race tests pass.
+- Linux identification was verified against the real unit's USB serial number.
+- Synthetic tests cover two uniquely serialized devices, ALSA renumbering,
+  duplicate or missing serial numbers, and ambiguous discovery.
+- 28 automated protocol, mapping, deduplication, safety, discovery, and race
+  tests pass.
 
 ## Known limitations
 
@@ -140,10 +144,17 @@ version, reproduction steps, and preferably the diagnostics report.
   on Linux and Companion 5.0.7.
 - M-VAVE SMC-PAD Pocket and SZ-STUDIOPAD-MINI are plausible relatives, but are
   neither detected nor tested yet.
-- Multiple identical devices are not supported in v0.1.0. The tested unit does
-  expose a USB serial number, so a future version can use that as its stable
-  Companion identity. This still needs platform-specific MIDI-to-USB matching
-  and a test with two physical units.
+- On Linux, devices with unique USB serial numbers receive separate, stable
+  Companion identities. The raw serial number is hashed and is never included
+  in the ID or description. A missing or duplicated serial falls back to the
+  physical USB port, so reconnecting it to another port creates a new surface.
+- Only one physical STARRYPAD MINI was available. Multi-device discovery is
+  covered by synthetic tests but still needs confirmation with two real units.
+- `@julusian/midi` does not expose the ALSA card number. This version therefore
+  pairs matching ALSA clients and USB MIDI cards by their kernel discovery
+  order and accepts the result only when every device can be matched one to
+  one. If discovery is incomplete or ambiguous, that scan reports no device;
+  Companion normally finds it on a later scan after Linux has finished hotplug.
 - A manual preset, bank, or editor change during an already validated session is
   corrected on the next reconnect.
 - RGB writes are cached optimistically after they are sent. Normal writes have
@@ -163,7 +174,7 @@ npm test
 npm run package
 ```
 
-The result is `starrypad-mini-0.1.0.tgz`, ready for Companion's
+The result is `starrypad-mini-0.2.0.tgz`, ready for Companion's
 **Import module package** function.
 
 Dependabot checks npm dependencies weekly. Minor and patch updates are grouped;

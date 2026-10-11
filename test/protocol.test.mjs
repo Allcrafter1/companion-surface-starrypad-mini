@@ -15,6 +15,11 @@ import {
   controlIdToHardwarePad,
 } from "../dist/mapping.js";
 import { matchesPort, stableSurfaceId } from "../dist/main.js";
+import {
+  matchLinuxDeviceIdentities,
+  parseAlsaPort,
+  scanLinuxUsbMidiDevices,
+} from "../dist/linux-device.js";
 test("documented P3/B3/Pad13 red exact reference vector", () => {
   const expected =
     "f0 00 32 09 59 00 00 40 02 23 58 00 00 30 00 00 00 7f 01 00 48 0a f7"
@@ -100,5 +105,85 @@ test("explicit input mapping and ALSA port matching", () => {
   assert.equal(
     stableSurfaceId("SINCO:SINCO STARRYPAD MINI-Private 20:0"),
     stableSurfaceId("SINCO:SINCO STARRYPAD MINI-Private 27:0"),
+  );
+});
+
+test("Linux identity follows a unique USB serial across ALSA renumbering", () => {
+  const devices = [
+    { card: 3, device: 0, serial: "SERIAL-B", usbPath: "1-4" },
+    { card: 1, device: 0, serial: "SERIAL-A", usbPath: "1-2" },
+  ];
+  const first = matchLinuxDeviceIdentities(
+    ["STARRYPAD MINI-Private 24:0", "STARRYPAD MINI-Private 20:0"],
+    devices,
+  );
+  const second = matchLinuxDeviceIdentities(
+    ["STARRYPAD MINI-Private 41:0", "STARRYPAD MINI-Private 39:0"],
+    devices,
+  );
+  assert.equal(
+    first.get("STARRYPAD MINI-Private 20:0").surfaceId,
+    second.get("STARRYPAD MINI-Private 39:0").surfaceId,
+  );
+  assert.equal(
+    first.get("STARRYPAD MINI-Private 24:0").surfaceId,
+    second.get("STARRYPAD MINI-Private 41:0").surfaceId,
+  );
+  assert.notEqual(
+    first.get("STARRYPAD MINI-Private 20:0").surfaceId,
+    first.get("STARRYPAD MINI-Private 24:0").surfaceId,
+  );
+});
+
+test("Linux identity uses the USB path for missing or duplicate serials", () => {
+  const identities = matchLinuxDeviceIdentities(
+    ["STARRYPAD MINI-Private 20:0", "STARRYPAD MINI-Private 24:0"],
+    [
+      { card: 1, device: 0, serial: "SAME", usbPath: "1-2" },
+      { card: 3, device: 0, serial: "SAME", usbPath: "1-4" },
+    ],
+  );
+  assert.match(
+    identities.get("STARRYPAD MINI-Private 20:0").surfaceId,
+    /linux-usb-path/,
+  );
+  assert.notEqual(
+    identities.get("STARRYPAD MINI-Private 20:0").surfaceId,
+    identities.get("STARRYPAD MINI-Private 24:0").surfaceId,
+  );
+  const missing = matchLinuxDeviceIdentities(
+    ["STARRYPAD MINI-Private 20:0"],
+    [{ card: 1, device: 0, usbPath: "2-3" }],
+  );
+  assert.equal(
+    missing.get("STARRYPAD MINI-Private 20:0").description,
+    "USB port 2-3",
+  );
+});
+
+test("Linux identity refuses ambiguous or non-ALSA mappings", () => {
+  const device = { card: 1, device: 0, serial: "A", usbPath: "1-2" };
+  assert.equal(
+    matchLinuxDeviceIdentities(
+      ["STARRYPAD MINI-Private 20:0", "STARRYPAD MINI-Private 24:0"],
+      [device],
+    ).size,
+    0,
+  );
+  assert.equal(
+    matchLinuxDeviceIdentities(["STARRYPAD MINI-Private"], [device]).size,
+    0,
+  );
+  assert.deepEqual(parseAlsaPort("Device 123:4"), {
+    name: "Device 123:4",
+    client: 123,
+    port: 4,
+  });
+});
+
+test("Linux sysfs scan tolerates an unavailable tree", async () => {
+  assert.deepEqual(
+    await scanLinuxUsbMidiDevices("/path/which/does/not/exist"),
+    [],
   );
 });

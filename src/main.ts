@@ -4,6 +4,7 @@ import type {
 } from "@companion-surface/base";
 import { Input, Output } from "@julusian/midi/lazy";
 import { getInputs, getOutputs } from "./midi-helper.js";
+import { resolveLinuxDeviceIdentities } from "./linux-device.js";
 import { StarryPad } from "./instance.js";
 import { DEFAULT_NOTES } from "./mapping.js";
 interface Device {
@@ -28,16 +29,24 @@ const plugin: SurfacePlugin<Device> = {
   destroy: async () => {},
   scanForSurfaces: async () => {
     const outputs = getOutputs();
-    return getInputs()
-      .filter(matchesPort)
+    const inputs = getInputs().filter(matchesPort);
+    const linuxIdentities = await resolveLinuxDeviceIdentities(inputs);
+    // During hotplug ALSA can become visible before sysfs is complete. Waiting
+    // for the next scan avoids creating a second, temporary name-based surface.
+    if (process.platform === "linux" && linuxIdentities.size !== inputs.length)
+      return [];
+    return inputs
       .flatMap((input) => {
         const output = outputs.find((n) => n === input);
+        const identity = linuxIdentities.get(input);
         return output
           ? [
               {
                 deviceHandle: `starrypad-mini:${input}`,
-                surfaceId: stableSurfaceId(input),
-                description: input,
+                surfaceId: identity?.surfaceId ?? stableSurfaceId(input),
+                description: identity
+                  ? `${input} (${identity.description})`
+                  : input,
                 pluginInfo: { input, output },
               },
             ]

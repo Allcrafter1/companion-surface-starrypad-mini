@@ -1,6 +1,6 @@
 {
   "name": "companion-surface-starrypad-mini",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Experimental Bitfocus Companion surface for the Donner STARRYPAD MINI",
   "main": "dist/main.js",
   "type": "module",
